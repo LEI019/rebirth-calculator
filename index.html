@@ -65,13 +65,33 @@
         SX: 1e21,
         SP: 1e23,
         OC: 1e25,
-        N: 1e28
+        N: 1e28,
+        D: 1e33 // Adicionando o Decilion
       };
       const match = input.trim().toUpperCase().match(/^([\d,.]+)([KMBTQ]?)$/);
       if (!match) return NaN;
       let [, num, unit] = match;
       num = parseFloat(num.replace(/,/g, ''));
       return unit ? num * units[unit] : num;
+    }
+
+    // Função para converter números grandes em siglas
+    function formatLargeNumber(number) {
+      const units = [
+        { name: 'D', value: 1e33 }, { name: 'N', value: 1e28 },
+        { name: 'OC', value: 1e25 }, { name: 'SP', value: 1e23 },
+        { name: 'SX', value: 1e21 }, { name: 'QN', value: 1e18 },
+        { name: 'QD', value: 1e15 }, { name: 'T', value: 1e12 },
+        { name: 'B', value: 1e9 }, { name: 'M', value: 1e6 },
+        { name: 'K', value: 1e3 }, { name: '', value: 1 }
+      ];
+      
+      for (const { name, value } of units) {
+        if (number >= value) {
+          return (number / value).toFixed(2) + " " + name;
+        }
+      }
+      return number;
     }
 
     function calculateRebirths() {
@@ -86,12 +106,20 @@
         return;
       }
 
+      // Calcular rebirths possíveis com a fórmula logaritmica
       const rebirths = Math.log(requirement / stats) / Math.log(0.5);
       const rebirthsRounded = Math.max(0, Math.floor(rebirths));
 
+      // Calcular os status necessários para X rebirths
+      const desiredRebirths = parseInt(document.getElementById("rebirths").value);
+      const statusForDesiredRebirths = desiredRebirths * requirement;
+
+      // Exibir resultados
       document.getElementById("result").innerText =
-        `You can currently get up to ${rebirthsRounded} rebirth(s) with your stats.`;
+        `You can currently get up to ${rebirthsRounded} rebirth(s) with your stats.\n` +
+        `To achieve ${desiredRebirths} rebirth(s), you need ${formatLargeNumber(statusForDesiredRebirths)} status.`;
     }
   </script>
 </body>
 </html>
+
