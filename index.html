@@ -22,7 +22,7 @@
       font-size: 1rem;
     }
     input {
-      width: 200px;
+      width: 250px;
     }
     button {
       background: #4caf50;
@@ -40,32 +40,52 @@
 </head>
 <body>
   <h1>Rebirth Stats Calculator</h1>
+
   <label for="rebirths">Desired Rebirths:</label>
   <input type="number" id="rebirths" placeholder="e.g. 10">
-  <label for="requirement">Rebirth Requirement (e.g. 700B = 700000000000):</label>
-  <input type="number" id="requirement" placeholder="e.g. 700000000000">
-  <button onclick="calculateStats()">Calculate Stats Needed</button>
+
+  <label for="requirement">Rebirth Requirement (e.g. 700B):</label>
+  <input type="text" id="requirement" placeholder="e.g. 700B">
+
+  <label for="currentStats">Your Current Stats (e.g. 85T):</label>
+  <input type="text" id="currentStats" placeholder="e.g. 85T">
+
+  <button onclick="calculateRebirths()">Calculate Max Rebirths</button>
   <div class="result" id="result"></div>
 
   <script>
-    function calculateStats() {
-      const rebirths = parseFloat(document.getElementById("rebirths").value);
-      const requirement = parseFloat(document.getElementById("requirement").value);
+    function parseNumber(input) {
+      const units = {
+        K: 1e3,
+        M: 1e6,
+        B: 1e9,
+        T: 1e12,
+        Q: 1e15
+      };
+      const match = input.trim().toUpperCase().match(/^([\d,.]+)([KMBTQ]?)$/);
+      if (!match) return NaN;
+      let [, num, unit] = match;
+      num = parseFloat(num.replace(/,/g, ''));
+      return unit ? num * units[unit] : num;
+    }
 
-      if (isNaN(rebirths) || isNaN(requirement)) {
-        document.getElementById("result").innerText = "Please enter valid numbers.";
+    function calculateRebirths() {
+      const rebirthRequirementInput = document.getElementById("requirement").value;
+      const currentStatsInput = document.getElementById("currentStats").value;
+
+      const requirement = parseNumber(rebirthRequirementInput);
+      const stats = parseNumber(currentStatsInput);
+
+      if (isNaN(requirement) || isNaN(stats) || stats <= 0) {
+        document.getElementById("result").innerText = "Please enter valid requirement and stats.";
         return;
       }
 
-      const statsNeeded = requirement * Math.pow(0.5, rebirths);
-      const formattedStats = statsNeeded.toLocaleString('en-US', {
-        maximumFractionDigits: 2,
-        notation: "compact",
-        compactDisplay: "short"
-      });
+      const rebirths = Math.log(requirement / stats) / Math.log(0.5);
+      const rebirthsRounded = Math.max(0, Math.floor(rebirths));
 
       document.getElementById("result").innerText =
-        `You need approximately ${formattedStats} stats for ${rebirths} rebirth(s).`;
+        `You can currently get up to ${rebirthsRounded} rebirth(s) with your stats.`;
     }
   </script>
 </body>
